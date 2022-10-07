@@ -5,8 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MP3Tracker"
         mc:Ignorable="d"
-        Title="MP3Tracker" Height="695" Width="1100" WindowStartupLocation="CenterScreen" Background="#FF232323" Foreground="White" ResizeMode="CanMinimize" Icon="/Images/applicationIcon.png" WindowStyle="ThreeDBorderWindow">
-    <Grid>
+        Title="MP3Tracker" Height="695" Width="1100" WindowStartupLocation="CenterScreen" Background="#3FFFFFFF" Foreground="White" ResizeMode="CanMinimize" Icon="/Images/applicationIcon.png" WindowStyle="ToolWindow">
+    <Grid AllowDrop="True" Drop="MusicDrop">
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
@@ -38,7 +38,7 @@
         <Button Grid.Row="4" Foreground="White" Name="ToEnd" Background="#FF3A3A3A" Click="ButtonToEnd_Click" Margin="589,1,445,58" BorderBrush="#00707070">
             <Image Source="/Images/endIcon.png" Name="toEndIcon"></Image>
         </Button>
-        <Button Grid.Row="3" Foreground="White" Name="RandomizeSongs" Background="#FF3A3A3A" Margin="349,11,664,58" Grid.RowSpan="2" BorderBrush="#00707070">
+        <Button Grid.Row="3" Foreground="White" Name="RandomizeSongs" Background="#FF3A3A3A" Margin="349,11,664,58" Grid.RowSpan="2" BorderBrush="#00707070" Click="RandomSong_Playlist_Clicked">
             <Image Source="/Images/randomShuffleIcon.png" Name="ShuffleIcon"></Image>
         </Button>
         <Slider Grid.Row="4" Name="MusicSlider" Margin="337,57,337,10" ValueChanged="MusicSlider_Move"/>
@@ -54,7 +54,14 @@
         <DockPanel Grid.Row="4" Background="#FF3A3A3A" Panel.ZIndex="-1"/>
         <DockPanel Grid.Row="3" Background="White" Panel.ZIndex="-2" Margin="207,7,0,0" Grid.RowSpan="2"/>
 
-        <DockPanel Grid.Row="1" Background="#FF3A3A3A" Margin="0,0,860,95" Panel.ZIndex="-1" Grid.RowSpan="4"></DockPanel>
+        <DockPanel Grid.Row="1" Background="#FF3A3A3A" Margin="0,0,860,95" Panel.ZIndex="-1" Grid.RowSpan="4">
+            <ScrollViewer>
+                <UniformGrid Columns="1" Name="Playlist" HorizontalAlignment="Left" VerticalAlignment="Top">
+                    
+                </UniformGrid>
+            </ScrollViewer>
+            
+        </DockPanel>
         <DockPanel Grid.Row="1" Background="White" Panel.ZIndex="-2" Margin="0,0,854,0" Grid.RowSpan="4"/>
         <DockPanel Background="White" Panel.ZIndex="1" Grid.Row="1"/>
         <DockPanel Background="White" LastChildFill="False" Grid.Row="3" Margin="0,7,860,102" Grid.RowSpan="2"/>
