@@ -1,4 +1,5 @@
 ﻿using Microsoft.Win32;
+using Microsoft.WindowsAPICodePack.Dialogs;
 using System;
 using System.Windows;
 using System.Windows.Media;
@@ -7,7 +8,7 @@ using System.Windows.Threading;
 using System.IO;
 using System.Collections.Generic;
 using System.Windows.Controls;
-using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace MP3Tracker
 {
@@ -16,6 +17,7 @@ namespace MP3Tracker
         private MediaPlayer mediaPlayer = new MediaPlayer();
         DispatcherTimer updateTimer;
         private Random random = new Random();
+        private Regex mp3Cleaner = new Regex("\\.mp3");
 
         public MP3Tracker_main()
         {
@@ -40,14 +42,28 @@ namespace MP3Tracker
                 MusicUpdate();
             }
         }
-
         private void OpenMusicToPlay(object sender, RoutedEventArgs e)
         {
             OpenFileDialog dialog = new OpenFileDialog();
-            dialog.Filter = "MP3 files (*.mp3)|*.mp3|Ogg files (*.ogg)|*.ogg|All files (*.*)|*.*";
+            dialog.Filter = "MP3 files (*.mp3)|*.mp3|Video files (*.mp4)|*.mp4|All files (*.*)|*.*";
             if (dialog.ShowDialog() == true)
             {
                 AddMusicFile(dialog.FileName);
+            }
+        }
+
+        private void OpenMusicFolderToPlay(object sender, RoutedEventArgs e)
+        {
+            CommonOpenFileDialog dialog = new CommonOpenFileDialog()
+            {
+                IsFolderPicker = true,
+            };
+            if (dialog.ShowDialog() == CommonFileDialogResult.Ok)
+            {
+                foreach (var file in Directory.GetFiles(dialog.FileName))
+                {
+                    AddMusicPlaylistFile(file, dialog.FileName);
+                }
             }
         }
 
@@ -117,6 +133,7 @@ namespace MP3Tracker
             }
             else if (!isOnRepeat && MusicSlider.Value == MusicSlider.Maximum && playlist.Count > 1 && !isRandomSelected)
             {
+                playlistButton[indexButtonSelected].Style = (Style)Resources["buttonDesign"];
                 int index = playlist.IndexOf(currentMusic);
                 index++;
                 if (index >= playlist.Count)
@@ -143,6 +160,7 @@ namespace MP3Tracker
             }
             else if (!isOnRepeat && MusicSlider.Value == MusicSlider.Maximum)
             {
+                playlistButton[indexButtonSelected].Style = (Style)Resources["buttonDesign"];
                 mediaPlayer.Stop();
                 currentMusic = null;
                 BitmapImage image = new BitmapImage();
@@ -229,8 +247,11 @@ namespace MP3Tracker
             }
             indexButtonSelected = index;
             playlistButton[indexButtonSelected].Style = (Style)Resources["buttonDesignSelected"];
-            
-            mediaPlayer.Position = mediaPlayer.NaturalDuration.TimeSpan;
+
+            if (mediaPlayer.NaturalDuration.HasTimeSpan)
+            {
+                mediaPlayer.Position = mediaPlayer.NaturalDuration.TimeSpan;
+            }
         }
 
         private void VolumeChange_Move(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -327,13 +348,76 @@ namespace MP3Tracker
             b.Margin = new Thickness(0, 7, 0, 5);
             b.Click += MusicSelected;
             b.Style = (Style)Resources["buttonDesign"];
-            b.Content = info.Name;
+            b.Content = mp3Cleaner.Replace(info.Name, "");
 
 
-            Playlist.Children.Add(b);
+            treeView.Items.Add(b);
             playlistButton.Add(b);
 
             // made a code that will check if file already in player.
+
+
+            if (currentMusic == null)
+            {
+                PlayMusic(info);
+            }
+        }
+
+        private List<TreeViewItem> listTreeViewItems = new List<TreeViewItem>();
+        private void AddMusicPlaylistFile(string file, string folderName)
+        {
+            FileInfo info = new FileInfo(file);
+
+            if (!info.Extension.ToLower().Equals(".mp3"))
+            {
+                return;
+            }
+
+            foreach (var item in playlist)
+            {
+                if (info.FullName == item.FullName)
+                {
+                    info = null;
+                    return;
+                }
+            }
+
+            playlist.Add(info);
+
+            Button b = new Button();
+            b.Tag = info;
+            b.Width = 223;
+            b.Margin = new Thickness(0, 7, 0, 5);
+            b.Click += MusicSelected;
+            b.Style = (Style)Resources["buttonDesign"];
+            b.Content = mp3Cleaner.Replace(info.Name, "");
+
+            TreeViewItem treeViewItem = new TreeViewItem();
+
+            treeViewItem.Header = folderName;
+            treeViewItem.Style = (Style)Resources["treeViewDesign"];
+            treeViewItem.Margin = new Thickness(0, 5, 0, 0);
+
+            foreach (var item in listTreeViewItems)
+            {
+                if (item.Header == treeViewItem.Header)
+                {
+                    item.Items.Add(b);
+                    playlistButton.Add(b);
+                    if (currentMusic == null)
+                    {
+                        PlayMusic(info);
+                    }
+                    treeViewItem = null;
+                    return;
+                }
+            }
+
+            treeViewItem.Items.Add(b);
+            treeView.Items.Add(treeViewItem);
+            listTreeViewItems.Add(treeViewItem);
+
+            playlistButton.Add(b);
 
 
             if (currentMusic == null)
@@ -357,12 +441,13 @@ namespace MP3Tracker
         private void PlayMusic(FileInfo file)
         {
             mediaPlayer.Open(new Uri(file.FullName));
-            MusicName.Content = file.Name;
+            MusicName.Content = mp3Cleaner.Replace(file.Name, "");
             currentMusic = file;
             if (mediaPlayer.NaturalDuration.HasTimeSpan)
             {
                 MusicSlider.Maximum = mediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
             }
+
             playlistButton[indexButtonSelected].Style = (Style)Resources["buttonDesignSelected"];
             isPlayable = false;
             ButtonStart_Click();

@@ -8,13 +8,13 @@
         Title="MP3Tracker" Height="695" Width="1100" WindowStartupLocation="CenterScreen" Background="#3FFFFFFF" Foreground="White" ResizeMode="CanMinimize" Icon="/Images/applicationIcon.png" WindowStyle="ThreeDBorderWindow">
     <Window.Resources>
         <Style TargetType="{x:Type Button}" x:Key="buttonDesign">
-            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Background" Value="#FF3A3A3A"/>
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
                         <Border Background="{TemplateBinding Background}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
@@ -30,6 +30,20 @@
             <Setter Property="Background" Value="White"/>
             <Setter Property="Foreground" Value="Black"/>
         </Style>
+        <Style TargetType="{x:Type TreeViewItem}" x:Key="treeViewDesign">
+            <Setter Property="Background" Value="#FF3A3A3A"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="White"/>
+                    <Setter Property="Foreground" Value="Black"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="False">
+                    <Setter Property="Background" Value="#FF3A3A3A"/>
+                    <Setter Property="Foreground" Value="White"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
     <Grid AllowDrop="True" Drop="MusicDrop">
         <Grid.ColumnDefinitions>
@@ -44,7 +58,9 @@
         </Grid.RowDefinitions>
         <Menu Background="#FF3A3A3A" Margin="0,0,0,5" Grid.RowSpan="2">
             <MenuItem Header="Программа" Foreground="White" Height="28">
-                <MenuItem Header="Открыть" Foreground="Black" Click="OpenMusicToPlay"></MenuItem>
+                <MenuItem Header="Выбрать трек..." Foreground="Black" Click="OpenMusicToPlay" ></MenuItem>
+                <Separator></Separator>
+                <MenuItem Header="Выбрать папку с треками..." Foreground="Black" Click="OpenMusicFolderToPlay"></MenuItem>
                 <Separator></Separator>
                 <MenuItem Header="Настройки" Foreground="Black"/>
                 <Separator/>
@@ -80,8 +96,10 @@
         <DockPanel Grid.Row="3" Background="White" Panel.ZIndex="-2" Margin="207,7,0,0" Grid.RowSpan="2"/>
 
         <DockPanel Grid.Row="1" Background="#FF3A3A3A" Margin="0,0,860,95" Panel.ZIndex="-1" Grid.RowSpan="4">
-            <ScrollViewer Margin="0,0,0,7">
+            <ScrollViewer Margin="0,0,0,7" Background="#FF3A3A3A">
                 <UniformGrid Columns="1" Name="Playlist" HorizontalAlignment="Left" VerticalAlignment="Top">
+                    <TreeView Name="treeView" Background="#FF3A3A3A" BorderBrush="#FF3A3A3A" ScrollViewer.VerticalScrollBarVisibility="Hidden" ScrollViewer.HorizontalScrollBarVisibility="Hidden" >
+                    </TreeView>
                 </UniformGrid>
             </ScrollViewer>
             
