@@ -7,6 +7,7 @@ using System.Windows.Threading;
 using System.IO;
 using System.Collections.Generic;
 using System.Windows.Controls;
+using System.Reflection;
 
 namespace MP3Tracker
 {
@@ -75,6 +76,7 @@ namespace MP3Tracker
                 image.EndInit();
                 playIcon.Source = image;
                 image = null;
+                playlistButton[indexButtonSelected].Style = (Style)Resources["buttonDesignSelected"];
                 if (mediaPlayer.NaturalDuration.HasTimeSpan)
                 {
                     MusicSlider.Maximum = mediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
@@ -89,12 +91,15 @@ namespace MP3Tracker
             image.EndInit();
             playIcon.Source = image;
 
+            playlistButton[indexButtonSelected].Style = (Style)Resources["buttonDesign"];
+
             image = null;
 
             MusicSlider.IsEnabled = false;
 
         }
 
+        private int indexButtonSelected = 0;
         private void MusicUpdate()
         {
             ProgressTimeLabel.Content = mediaPlayer.Position.ToString(@"mm\:ss");
@@ -118,12 +123,22 @@ namespace MP3Tracker
                 {
                     index = 0;
                 }
+
+                indexButtonSelected = index;
+                playlistButton[indexButtonSelected].Style = (Style)Resources["buttonDesignSelected"];
+
                 PlayMusic(playlist[index]);
             }
             else if (!isOnRepeat && MusicSlider.Value == MusicSlider.Maximum && playlist.Count > 1 && isRandomSelected)
             {
+                playlistButton[indexButtonSelected].Style = (Style)Resources["buttonDesign"];
+
                 int index = playlist.IndexOf(currentMusic);
                 index = random.Next(0, playlist.Count);
+
+                indexButtonSelected = index;
+                playlistButton[indexButtonSelected].Style = (Style)Resources["buttonDesignSelected"];
+
                 PlayMusic(playlist[index]);
             }
             else if (!isOnRepeat && MusicSlider.Value == MusicSlider.Maximum)
@@ -176,12 +191,19 @@ namespace MP3Tracker
                 isClickedButtonToStart = true;
                 return;
             }
+            
+            playlistButton[indexButtonSelected].Style = (Style)Resources["buttonDesign"];
+            
             int index = playlist.IndexOf(currentMusic);
             index--;
             if (index >= playlist.Count || index < 0)
             {
                 index = 0;
             }
+
+            indexButtonSelected = index;
+            playlistButton[indexButtonSelected].Style = (Style)Resources["buttonDesignSelected"];
+
             PlayMusic(playlist[index]);
             isClickedButtonToStart = false;
         }
@@ -192,6 +214,22 @@ namespace MP3Tracker
             {
                 return;
             }
+            if (isOnRepeat)
+            {
+                mediaPlayer.Position = mediaPlayer.NaturalDuration.TimeSpan;
+                return;
+            }
+            playlistButton[indexButtonSelected].Style = (Style)Resources["buttonDesign"];
+           
+            int index = playlist.IndexOf(currentMusic);
+            index++;
+            if (index >= playlist.Count || index < 0)
+            {
+                index = 0;
+            }
+            indexButtonSelected = index;
+            playlistButton[indexButtonSelected].Style = (Style)Resources["buttonDesignSelected"];
+            
             mediaPlayer.Position = mediaPlayer.NaturalDuration.TimeSpan;
         }
 
@@ -260,6 +298,7 @@ namespace MP3Tracker
         }
 
         private List<FileInfo> playlist = new List<FileInfo>();
+        private List<Button> playlistButton = new List<Button>();
         private FileInfo currentMusic = null;
 
         private void AddMusicFile(string file)
@@ -271,17 +310,31 @@ namespace MP3Tracker
                 return;
             }
 
+            foreach (var item in playlist)
+            {
+                if (info.FullName == item.FullName)
+                {
+                    info = null;
+                    return;
+                }
+            }
 
             playlist.Add(info);
 
             Button b = new Button();
             b.Tag = info;
+            b.Width = 223;
+            b.Margin = new Thickness(0, 7, 0, 5);
             b.Click += MusicSelected;
+            b.Style = (Style)Resources["buttonDesign"];
             b.Content = info.Name;
 
+
             Playlist.Children.Add(b);
+            playlistButton.Add(b);
 
             // made a code that will check if file already in player.
+
 
             if (currentMusic == null)
             {
@@ -292,8 +345,13 @@ namespace MP3Tracker
         private void MusicSelected(object sender, RoutedEventArgs e)
         {
             FileInfo file = (FileInfo)(((Button)sender).Tag);
+            
+            playlistButton[indexButtonSelected].Style = (Style)Resources["buttonDesign"];
+            int index = playlist.IndexOf(file);
+            indexButtonSelected = index;
+            playlistButton[indexButtonSelected].Style = (Style)Resources["buttonDesignSelected"];
+            
             PlayMusic(file);
-            ButtonStart_Click();
         }
 
         private void PlayMusic(FileInfo file)
@@ -305,6 +363,7 @@ namespace MP3Tracker
             {
                 MusicSlider.Maximum = mediaPlayer.NaturalDuration.TimeSpan.TotalSeconds;
             }
+            playlistButton[indexButtonSelected].Style = (Style)Resources["buttonDesignSelected"];
             isPlayable = false;
             ButtonStart_Click();
         }
